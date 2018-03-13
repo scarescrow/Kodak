@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Kodak</title>
+	<link rel="stylesheet" href="css/materialize.min.css">
+	<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body onload="load()">
+	<div class="container">
+        <div class="card">
+            <div class="card-image">
+                <img id="mainImage" />
+                <span class="card-title" id="mainTitle"></span>
+            </div>
+            <div class="card-content">
+                <p id="mainContent"></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        const {firebase} = require('./config');
+        const db = firebase.database().ref('posts');
+
+        function updateCard(src, title, content) {
+            document.getElementById('mainImage').src = src;
+            document.getElementById('mainTitle').innerHTML = title;
+            document.getElementById('mainContent').innerHTML = content;
+        }
+
+        function load() {
+            db.once("value", function(snap) {
+                all_posts = snap.val();
+                all_keys = Object.keys(all_posts)
+                current_post = all_posts[all_keys[2]];
+                updateCard(current_post.src, current_post.title, current_post.desc);
+            });
+        }
+    </script>
+</body>
+</html>
