@@ -29,11 +29,34 @@
         }
 
         function load() {
+            all_posts = null;
+            all_keys = [];
+            new_posts = false;
+
             db.once("value", function(snap) {
-                all_posts = snap.val();
-                all_keys = Object.keys(all_posts)
-                current_post = all_posts[all_keys[2]];
+                current_post = all_posts[all_keys[0]];
                 updateCard(current_post.src, current_post.title, current_post.desc);
+                new_posts = true;
+            });
+
+            db.on("child_added", function(snap, prevKey) {
+                if (!all_posts)
+                    all_posts = {}
+                if (new_posts) {
+                    added_post = snap.val()
+                    all_posts[snap.key] = added_post;
+                    all_keys.unshift(snap.key);
+                    updateCard(added_post.src, added_post.title, added_post.desc);
+                } else {
+                    all_posts[snap.key] = snap.val();
+                    all_keys.unshift(snap.key);
+                }
+            });
+
+            db.on("child_removed", function(snap) {
+                delete all_posts[snap.key]
+                index = all_keys.indexOf(snap.key);
+                all_keys.splice(index, 1);
             });
         }
     </script>

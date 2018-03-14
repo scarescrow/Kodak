@@ -3,15 +3,35 @@
 <head>
   <title>Kodak Moments</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <style type="text/css">
+    form {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
   <nav>
     <div class="nav-wrapper">
-      <a class="brand-logo center">Add Posts</a>
+      <a class="brand-logo center" id="navTitle"></a>
+      <ul id="nav-mobile" class="right hide-on-med-and-down">
+        <li><a href="#" id="logout" style="display:none;">Logout</a></li>
+      </ul>
     </div>
   </nav>
   <div class="container">
-    <form id="postSubmit">
+    <form id="loginForm" style="display:none;">
+      <div>
+        <label>Email</label>
+        <input type="text" id="email">
+      </div>
+      <div>
+        <label>Password</label>
+        <input type="password" id="password">
+      </div>
+      <button class="btn waves-effect waves-light" type="submit">Login</button>
+    </form>
+    <form id="postSubmit" style="display:none;">
       <div>
         <label>Title</label>
         <input type="text" id="title">
