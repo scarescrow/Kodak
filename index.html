@@ -5,8 +5,8 @@
 	<link rel="stylesheet" href="css/materialize.min.css">
 	<link rel="stylesheet" href="css/style.css"/>
 </head>
-<body onload="load()">
-	<div class="container">
+<body>
+	<div class="container" id="complete-card">
         <div class="card">
             <div class="card-image">
                 <img id="mainImage" />
@@ -21,21 +21,17 @@
     <script type="text/javascript">
         const {firebase} = require('./config');
         const db = firebase.database().ref('posts');
+        const $ = require('jquery');
+        all_posts = null;
+        all_keys = [];
+        new_posts = false;
+        imageTimer = null;
+        $('#complete-card').hide();
 
-        function updateCard(src, title, content) {
-            document.getElementById('mainImage').src = src;
-            document.getElementById('mainTitle').innerHTML = title;
-            document.getElementById('mainContent').innerHTML = content;
-        }
-
-        function load() {
-            all_posts = null;
-            all_keys = [];
-            new_posts = false;
+        $(function() {
 
             db.once("value", function(snap) {
-                current_post = all_posts[all_keys[0]];
-                updateCard(current_post.src, current_post.title, current_post.desc);
+                imageChanger(all_posts, all_keys, 0);
                 new_posts = true;
             });
 
@@ -43,10 +39,12 @@
                 if (!all_posts)
                     all_posts = {}
                 if (new_posts) {
+                    stopTimer();
                     added_post = snap.val()
                     all_posts[snap.key] = added_post;
                     all_keys.unshift(snap.key);
-                    updateCard(added_post.src, added_post.title, added_post.desc);
+                    console.log(all_posts, all_keys)
+                    // imageChanger(all_posts, all_keys, 0);
                 } else {
                     all_posts[snap.key] = snap.val();
                     all_keys.unshift(snap.key);
@@ -54,9 +52,46 @@
             });
 
             db.on("child_removed", function(snap) {
+                stopTimer()
                 delete all_posts[snap.key]
                 index = all_keys.indexOf(snap.key);
                 all_keys.splice(index, 1);
+                imageChanger(all_posts, all_keys, 0)
+            });
+
+
+        });
+
+        function imageChanger(posts, keys, ctr) {
+            try {
+                if (ctr >= keys.length)
+                    ctr = 0;
+                post = posts[keys[ctr]];
+                updateCard(post.src, post.title, post.desc, function() {
+                    imageTimer = setTimeout(imageChanger, 5000, posts, keys, ctr + 1);
+                });
+            } catch(e) {
+                console.log("Error", e);
+                console.log("Ctr and length", ctr, keys.length);
+                console.log("Posts", posts);
+                console.log("Keys", keys);
+            }
+        }
+
+        function stopTimer() {
+            if(imageTimer)
+                clearTimeout(imageTimer);
+            imageTimer = null;
+        }
+
+        function updateCard(src, title, content, callback) {
+            $('#complete-card').fadeOut(3000, function() {
+                $('#mainImage').attr("src", src);
+                $('#mainTitle').text(title);
+                $('#mainContent').text(content);
+                $('#complete-card').fadeIn(3000, function() {
+                    callback();
+                });
             });
         }
     </script>
