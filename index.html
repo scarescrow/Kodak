@@ -9,7 +9,7 @@
 	<div class="container" id="complete-card">
         <div class="card">
             <div class="card-image">
-                <img id="mainImage" />
+                <img id="mainImage"/>
                 <span class="card-title" id="mainTitle"></span>
             </div>
             <div class="card-content">
@@ -24,6 +24,7 @@
         const $ = require('jquery');
         all_posts = null;
         all_keys = [];
+        ctr = 0
         new_posts = false;
         imageTimer = null;
         $('#complete-card').hide();
@@ -39,11 +40,11 @@
                 if (!all_posts)
                     all_posts = {}
                 if (new_posts) {
-                    stopTimer();
+
                     added_post = snap.val()
                     all_posts[snap.key] = added_post;
                     all_keys.unshift(snap.key);
-                    console.log(all_posts, all_keys)
+                    ctr = -1;
                     // imageChanger(all_posts, all_keys, 0);
                 } else {
                     all_posts[snap.key] = snap.val();
@@ -52,40 +53,40 @@
             });
 
             db.on("child_removed", function(snap) {
-                stopTimer()
                 delete all_posts[snap.key]
                 index = all_keys.indexOf(snap.key);
                 all_keys.splice(index, 1);
-                imageChanger(all_posts, all_keys, 0)
+                ctr = -1;
+                // imageChanger(all_posts, all_keys, 0)
             });
 
 
         });
 
-        function imageChanger(posts, keys, ctr) {
+        function imageChanger() {
             try {
-                if (ctr >= keys.length)
+                if (ctr >= all_keys.length || ctr < 0)
                     ctr = 0;
-                post = posts[keys[ctr]];
+                post = all_posts[all_keys[ctr]];
                 updateCard(post.src, post.title, post.desc, function() {
-                    imageTimer = setTimeout(imageChanger, 5000, posts, keys, ctr + 1);
+                    ctr += 1;
+                    imageTimer = setTimeout(imageChanger, 5000);
                 });
             } catch(e) {
                 console.log("Error", e);
-                console.log("Ctr and length", ctr, keys.length);
-                console.log("Posts", posts);
-                console.log("Keys", keys);
+                console.log("Ctr and length", ctr, all_keys.length);
+                console.log("Posts", all_posts);
+                console.log("Keys", all_keys);
             }
         }
 
         function stopTimer() {
-            if(imageTimer)
-                clearTimeout(imageTimer);
-            imageTimer = null;
+            clearTimeout(imageTimer);
         }
 
         function updateCard(src, title, content, callback) {
             $('#complete-card').fadeOut(3000, function() {
+                $('#mainImage').attr("src", "");
                 $('#mainImage').attr("src", src);
                 $('#mainTitle').text(title);
                 $('#mainContent').text(content);
