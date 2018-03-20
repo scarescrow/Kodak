@@ -2,12 +2,13 @@
 <html>
 <head>
 	<title>Kodak</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="css/materialize.min.css">
 	<link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-	<div class="container" id="complete-card">
-        <div class="card">
+	<div class="container">
+        <div class="card" id="complete-card">
             <div class="card-image">
                 <img id="mainImage"/>
                 <span class="card-title" id="mainTitle"></span>
@@ -16,12 +17,21 @@
                 <p id="mainContent"></p>
             </div>
         </div>
+        <div class="fixed-action-btn" onclick="createSlideShowWindow()">
+            <a class="btn-floating btn-large red">
+                <i class="material-icons">slideshow</i>
+            </a>
+        </div>
     </div>
 
     <script type="text/javascript">
         const {firebase} = require('./config');
         const db = firebase.database().ref('posts');
+        const remote = require('electron').remote;
+        const BrowserWindow = remote.BrowserWindow;
         const $ = require('jquery');
+        const ipcRenderer = require('electron').ipcRenderer;
+        
         all_posts = null;
         all_keys = [];
         ctr = 0
@@ -32,7 +42,8 @@
         $(function() {
 
             db.once("value", function(snap) {
-                imageChanger(all_posts, all_keys, 0);
+                current_card = all_posts[all_keys[0]];
+                updateCard(current_card.src, current_card.title, current_card.desc);
                 new_posts = true;
             });
 
@@ -45,7 +56,6 @@
                     all_posts[snap.key] = added_post;
                     all_keys.unshift(snap.key);
                     ctr = -1;
-                    // imageChanger(all_posts, all_keys, 0);
                 } else {
                     all_posts[snap.key] = snap.val();
                     all_keys.unshift(snap.key);
@@ -57,32 +67,10 @@
                 index = all_keys.indexOf(snap.key);
                 all_keys.splice(index, 1);
                 ctr = -1;
-                // imageChanger(all_posts, all_keys, 0)
             });
 
 
         });
-
-        function imageChanger() {
-            try {
-                if (ctr >= all_keys.length || ctr < 0)
-                    ctr = 0;
-                post = all_posts[all_keys[ctr]];
-                updateCard(post.src, post.title, post.desc, function() {
-                    ctr += 1;
-                    imageTimer = setTimeout(imageChanger, 5000);
-                });
-            } catch(e) {
-                console.log("Error", e);
-                console.log("Ctr and length", ctr, all_keys.length);
-                console.log("Posts", all_posts);
-                console.log("Keys", all_keys);
-            }
-        }
-
-        function stopTimer() {
-            clearTimeout(imageTimer);
-        }
 
         function updateCard(src, title, content, callback) {
             $('#complete-card').fadeOut(3000, function() {
@@ -95,6 +83,14 @@
                 });
             });
         }
+
+        function createSlideShowWindow() {
+            ipcRenderer.send("window:slideShow", {
+                'data': all_posts,
+                'keys': all_keys
+            });
+        }
+
     </script>
 </body>
 </html>
