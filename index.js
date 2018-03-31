@@ -57,48 +57,6 @@ app.on('ready', function() {
 	});
 });
 
-function createSlideShowWindow(posts) {
-
-    slideShowWindow = new BrowserWindow({
-        fullscreen: true,
-        title: 'Slide Show',
-        autoHideMenuBar: true,
-        backgroundColor: '#333',
-    });
-
-    // Load html into window
-
-    slideShowWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'slideshow.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
-
-    // Send posts on load finish
-
-    slideShowWindow.webContents.on('did-finish-load', function() {
-    	slideShowWindow.webContents.send("data:send", posts);
-    });
-
-    // Garbabe collection handle
-
-    slideShowWindow.on('close', function() {
-        slideShowWindow = null;
-    });
-}
-
-ipcMain.on('window:slideShow', function(e, item) {
-	createSlideShowWindow(item);
-});
-
-ipcMain.on("close:slideShow", function(e, item) {
-	slideShowWindow.close();
-});
-
-function goToNextPic() {
-
-}
-
 function configureWifi() {
 
 }

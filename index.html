@@ -4,46 +4,123 @@
 	<title>Kodak</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="css/materialize.min.css">
+    <link rel="stylesheet" href="node_modules/swiper/dist/css/swiper.min.css">
 	<link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-	<div class="container">
-        <div class="card" id="complete-card">
-            <div class="card-image">
-                <img id="mainImage"/>
-                <span class="card-title" id="mainTitle"></span>
-            </div>
-            <div class="card-content">
-                <p id="mainContent"></p>
+    <div>
+        <div class="center-align">
+            <div class="preloader-wrapper big active" id="spinner">
+              <div class="spinner-layer spinner-blue">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div><div class="gap-patch">
+                  <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+
+              <div class="spinner-layer spinner-red">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div><div class="gap-patch">
+                  <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+
+              <div class="spinner-layer spinner-yellow">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div><div class="gap-patch">
+                  <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+
+              <div class="spinner-layer spinner-green">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div><div class="gap-patch">
+                  <div class="circle"></div>
+                </div><div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
             </div>
         </div>
-        <div class="fixed-action-btn" onclick="createSlideShowWindow()">
-            <a class="btn-floating btn-large red">
+	    <div class="swiper-container">
+            <div class="swiper-wrapper" id="slider"></div>
+            <!-- If we need pagination -->
+            <!-- <div class="swiper-pagination"></div> -->
+         
+            <!-- If we need navigation buttons -->
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+         
+            <!-- If we need scrollbar -->
+            <div class="swiper-scrollbar"></div>
+        </div>
+        <div class="fixed-action-btn">
+            <a class="btn-floating btn-large red left" id="home-btn">
+                <i class="material-icons">home</i>
+            </a>
+            <a class="btn-floating btn-large red" id="slideshow-btn">
                 <i class="material-icons">slideshow</i>
             </a>
         </div>
     </div>
-
     <script type="text/javascript">
         const {firebase} = require('./config');
         const db = firebase.database().ref('posts');
-        const remote = require('electron').remote;
-        const BrowserWindow = remote.BrowserWindow;
         const $ = require('jquery');
-        const ipcRenderer = require('electron').ipcRenderer;
+        const Swiper = require('swiper');
+        const remote = require('electron').remote;
         
         all_posts = null;
         all_keys = [];
         ctr = 0
         new_posts = false;
         imageTimer = null;
-        $('#complete-card').hide();
+
+        var mySwiper = new Swiper('.swiper-container', {
+            // Optional parameters
+            loop: false,
+            init: false,
+
+            // If we need pagination
+            // pagination: {
+            //   el: '.swiper-pagination',
+            // },
+
+            // Navigation arrows
+            navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+            },
+
+            // And if we need scrollbar
+            scrollbar: {
+              el: '.swiper-scrollbar',
+            },
+
+            keyboard: {
+                enabled: true,
+            }
+        });
 
         $(function() {
-
+            $('#swiper-container').hide();
             db.once("value", function(snap) {
-                current_card = all_posts[all_keys[0]];
-                updateCard(current_card.src, current_card.title, current_card.desc);
+                for (var i = 0; i < all_keys.length; i ++) {
+                    key = all_keys[i];
+                    current_card = all_posts[key];
+                    appendCard(mySwiper, key, current_card.src, current_card.title, current_card.desc);
+                }
+                mySwiper.init();
                 new_posts = true;
             });
 
@@ -51,11 +128,12 @@
                 if (!all_posts)
                     all_posts = {}
                 if (new_posts) {
-
                     added_post = snap.val()
                     all_posts[snap.key] = added_post;
                     all_keys.unshift(snap.key);
                     ctr = -1;
+                    appendCard(mySwiper, snap.key, added_post.src, added_post.title, added_post.desc, false);
+                    mySwiper.slideTo(0);
                 } else {
                     all_posts[snap.key] = snap.val();
                     all_keys.unshift(snap.key);
@@ -67,28 +145,49 @@
                 index = all_keys.indexOf(snap.key);
                 all_keys.splice(index, 1);
                 ctr = -1;
+                mySwiper.removeSlide(index);
+            });
+
+            mySwiper.on("autoplayStart", function() {
+                $('#slideshow-btn').html('<i class="material-icons">clear</i>');
+                mySwiper.fadeEffect.crossFade = true;
+            });
+
+            mySwiper.on("autoplayStop", function() {
+                $('#slideshow-btn').html('<i class="material-icons">slideshow</i>');
+                mySwiper.fadeEffect.crossFade = true;
+            });
+
+            mySwiper.on("init", function() {
+                $("#spinner").hide();
+                // $('#swiper-container').fadeIn(1000);
+            });
+
+            $('#home-btn').click(function() {
+                mySwiper.slideTo(0);
+            });
+
+            $('#slideshow-btn').click(function() {
+                if (mySwiper.autoplay.running) {
+                    mySwiper.autoplay.stop();
+                } else {
+                    mySwiper.autoplay.start();
+                }
             });
 
 
         });
 
-        function updateCard(src, title, content, callback) {
-            $('#complete-card').fadeOut(3000, function() {
-                $('#mainImage').attr("src", "");
-                $('#mainImage').attr("src", src);
-                $('#mainTitle').text(title);
-                $('#mainContent').text(content);
-                $('#complete-card').fadeIn(3000, function() {
-                    callback();
-                });
-            });
-        }
-
-        function createSlideShowWindow() {
-            ipcRenderer.send("window:slideShow", {
-                'data': all_posts,
-                'keys': all_keys
-            });
+        function appendCard(swiper, id, src, title, content, append=true) {
+            content = '<div class="swiper-slide"><div class="card" id="' + id + 
+            '"><div class="card-image"><img src="' + src +
+            '"/><span class="card-title">' + title + 
+            '</span></div><div class="card-content"><p id="mainContent">' + content + 
+            '</p></div></div></div>'
+            if (append)
+                swiper.appendSlide(content);
+            else
+                swiper.prependSlide(content);
         }
 
     </script>

@@ -2,3 +2,7 @@
 	height: 700px;
 	overflow: hidden;
 }
+
+#spinner {
+	margin-top: 5%;
+}
