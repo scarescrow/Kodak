@@ -11,7 +11,7 @@
     <div>
         <div class="center-align">
             <div class="preloader-wrapper big active" id="spinner">
-              <div class="spinner-layer spinner-blue">
+              <div class="spinner-layer spinner-red">
                 <div class="circle-clipper left">
                   <div class="circle"></div>
                 </div><div class="gap-patch">
@@ -21,7 +21,7 @@
                 </div>
               </div>
 
-              <div class="spinner-layer spinner-red">
+              <div class="spinner-layer spinner-blue">
                 <div class="circle-clipper left">
                   <div class="circle"></div>
                 </div><div class="gap-patch">
@@ -68,7 +68,7 @@
                     <i class="material-icons">home</i>
                 </a>
                 <a class="btn-floating btn-large red" id="slideshow-btn">
-                    <i class="material-icons">slideshow</i>
+                    <i class="material-icons">play_arrow</i>
                 </a>
             </div>
         </div>
@@ -87,6 +87,7 @@
         imageTimer = null;
 
         $('#fabs').hide();
+        $('#spinner').css('margin-top', 0.48 * window.screen.height);
 
         var mySwiper = new Swiper('.swiper-container', {
             // Optional parameters
@@ -151,13 +152,11 @@
             });
 
             mySwiper.on("autoplayStart", function() {
-                $('#slideshow-btn').html('<i class="material-icons">clear</i>');
-                mySwiper.fadeEffect.crossFade = true;
+                $('#slideshow-btn').html('<i class="material-icons">pause</i>');
             });
 
             mySwiper.on("autoplayStop", function() {
-                $('#slideshow-btn').html('<i class="material-icons">slideshow</i>');
-                mySwiper.fadeEffect.crossFade = true;
+                $('#slideshow-btn').html('<i class="material-icons">play_arrow</i>');
             });
 
             mySwiper.on("init", function() {
