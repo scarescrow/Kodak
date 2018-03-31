@@ -63,14 +63,14 @@
          
             <!-- If we need scrollbar -->
             <div class="swiper-scrollbar"></div>
-        </div>
-        <div class="fixed-action-btn">
-            <a class="btn-floating btn-large red left" id="home-btn">
-                <i class="material-icons">home</i>
-            </a>
-            <a class="btn-floating btn-large red" id="slideshow-btn">
-                <i class="material-icons">slideshow</i>
-            </a>
+            <div class="fixed-action-btn" id="fabs">
+                <a class="btn-floating btn-large red left" id="home-btn">
+                    <i class="material-icons">home</i>
+                </a>
+                <a class="btn-floating btn-large red" id="slideshow-btn">
+                    <i class="material-icons">slideshow</i>
+                </a>
+            </div>
         </div>
     </div>
     <script type="text/javascript">
@@ -85,6 +85,8 @@
         ctr = 0
         new_posts = false;
         imageTimer = null;
+
+        $('#fabs').hide();
 
         var mySwiper = new Swiper('.swiper-container', {
             // Optional parameters
@@ -160,7 +162,8 @@
 
             mySwiper.on("init", function() {
                 $("#spinner").hide();
-                // $('#swiper-container').fadeIn(1000);
+                $('#fabs').show();
+                $('.card-image').css('height', (750 * window.screen.height) / 864);
             });
 
             $('#home-btn').click(function() {
