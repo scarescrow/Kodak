@@ -57,9 +57,14 @@ app.on('ready', function() {
 	});
 });
 
-function configureWifi() {
-
-}
+ipcMain.on('notify:add', function(e, item) {
+	const eNotify = require('electron-notify');
+	eNotify.notify({
+		title: "Yayy!",
+		text: "New image has been posted",
+		sound: path.join(__dirname, 'assets', 'unconvinced.mp3'),
+	});
+});
 
 const mainMenuTemplate = [
 	{

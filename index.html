@@ -79,6 +79,12 @@
         const $ = require('jquery');
         const Swiper = require('swiper');
         const remote = require('electron').remote;
+        const electron = require("electron");
+        const {ipcRenderer} = electron;
+        // eNotify.setConfig({
+        //     width: 0,
+        //     height: 0,
+        // });
         
         all_posts = null;
         all_keys = [];
@@ -136,7 +142,9 @@
                     all_keys.unshift(snap.key);
                     ctr = -1;
                     appendCard(mySwiper, snap.key, added_post.src, added_post.title, added_post.desc, false);
-                    mySwiper.slideTo(0);
+                    // mySwiper.slideTo(0);  
+                    notify();            
+                    $('#home-btn').addClass('pulse');
                 } else {
                     all_posts[snap.key] = snap.val();
                     all_keys.unshift(snap.key);
@@ -165,7 +173,12 @@
                 $('.card-image').css('height', (750 * window.screen.height) / 864);
             });
 
+            mySwiper.on("reachBeginning", function() {
+                $('#home-btn').removeClass('pulse');
+            });
+
             $('#home-btn').click(function() {
+                $('#home-btn').removeClass('pulse');
                 mySwiper.slideTo(0);
             });
 
@@ -186,10 +199,15 @@
             '"/><span class="card-title">' + title + 
             '</span></div><div class="card-content"><p id="mainContent">' + content + 
             '</p></div></div></div>'
+            
             if (append)
                 swiper.appendSlide(content);
             else
                 swiper.prependSlide(content);
+        }
+
+        function notify() {
+            ipcRenderer.send('notify:add', "");
         }
 
     </script>
